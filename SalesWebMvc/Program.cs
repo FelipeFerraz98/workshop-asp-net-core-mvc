@@ -1,4 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SalesWebMvc.Data;
 using SalesWebMvc.Services;
 
@@ -11,9 +19,19 @@ builder.Services.AddDbContext<SalesWebMvcContext>(options =>
 
 // Adiciona serviços ao contêiner.
 builder.Services.AddControllersWithViews();
+
+// Adiciona scoped
 builder.Services.AddScoped<SeedingService>();
 builder.Services.AddScoped<SellerService>();
 builder.Services.AddScoped<DepartmentService>();
+
+// Configurações de localização
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.SupportedCultures = new[] { new CultureInfo("en-US") };
+    options.SupportedUICultures = new[] { new CultureInfo("en-US") };
+});
 
 var app = builder.Build();
 
@@ -21,13 +39,15 @@ var app = builder.Build();
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 var seedingService = services.GetRequiredService<SeedingService>();
-seedingService.Seed(); // Assumindo que você tenha um método Seed() em SeedingService para popular o banco de dados.
+seedingService.Seed();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // O valor padrão do HSTS é de 30 dias. Você pode querer alterar isso para cenários de produção, consulte https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+else
+{
     app.UseDeveloperExceptionPage();
 }
 
@@ -37,6 +57,10 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+// Configuração de localização
+var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(locOptions.Value);
 
 app.MapControllerRoute(
     name: "default",
