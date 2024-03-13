@@ -24,6 +24,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<SeedingService>();
 builder.Services.AddScoped<SellerService>();
 builder.Services.AddScoped<DepartmentService>();
+builder.Services.AddScoped<SalesRecordService>();
 
 // Configurações de localização
 builder.Services.Configure<RequestLocalizationOptions>(options =>
